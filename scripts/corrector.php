@@ -1,29 +1,37 @@
-<link rel="stylesheet" href="../style/output.css">
-<?php
-require_once('../converter/idna_convert.class.php');
-$input_path = '../input_files/';
-$output_path = '../output_files/';
+<link rel="stylesheet" href="/style/output.css">
 
+<?php
+
+define('ROOT', dirname(__DIR__));
+define('InputPath', ROOT . "/input");
+define('OutputPath', ROOT . "/output");
+
+require_once(ROOT . '/converter/idna_convert.class.php');
 
 $fileName = $_GET['fileName'] ?? null;
 $checkAll = $_GET['checkAll'] ?? null;
+
 if ($checkAll) {
     $checkAll = $_GET['checkAll'] === 'all_files' ? true : false;
 }
 
 $csv = '';
+
 if (isset($fileName) || $checkAll) {
     // Считывание файла и запись в массив
     if ($checkAll) {
-        $scanedFiles = scandir($input_path);
+        $scanedFiles = scandir(InputPath);
+
         for ($i = 2; $i < count($scanedFiles); $i++) {
-            $csv .= file_get_contents($input_path . $scanedFiles[$i]);
+            $csv .= file_get_contents(InputPath . "/" . $scanedFiles[$i]);
         }
     } else {
-        $csv = file_get_contents($input_path . $fileName);
+        $csv = file_get_contents(InputPath . "/" . $fileName);
     }
+
     $rows = explode(PHP_EOL, $csv);
     $data = [];
+
     foreach ($rows as $row) {
         if ($row != null) {
             $data[] = trim($row, '\?,\.\SP\!\"\#\$\%\&\(\)\*\+\`\~\,\-\;\:\<\>\=\@');
@@ -101,7 +109,6 @@ if (isset($fileName) || $checkAll) {
         $arrayAfterRegCycle[] = filtration($str, $patterns);
     }
 
-
     // Распределение по массивам корректных и некорректных email'ов после первого рег
     foreach ($arrayAfterRegCycle as $value) {
         if ($value['after_reg_1'] != null) {
@@ -166,25 +173,10 @@ if (isset($fileName) || $checkAll) {
         }
     }
 
-    // Запись корректных Email
-    if (isset($fileName)) {
-        $buffer = fopen($output_path . basename($fileName, '.csv') . '_correct_emails.csv', 'w');
-    } else {
-        $buffer = fopen($output_path . 'all_files_correct_emails.csv', 'w');
-    }
-    fputs($buffer, chr(0xEF) . chr(0xBB) . chr(0xBF));
-    fputcsv($buffer, $correctEmail, "\n");
-    fclose($buffer);
+    $basename = basename($fileName, '.csv'); // Повторный вызов функции
 
-    // Запись ошибочных Email
-    if (isset($fileName)) {
-        $buffer = fopen($output_path . basename($fileName, '.csv') . '_incorrect_emails.csv', 'w');
-    } else {
-        $buffer = fopen($output_path . 'all_files_incorrect_emails.csv', 'w');
-    }
-    fputs($buffer, chr(0xEF) . chr(0xBB) . chr(0xBF));
-    fputcsv($buffer, $wrongEmails, "\n");
-    fclose($buffer);
+    file_put_contents(OutputPath . "/" . $basename . '_correct_emails.csv', implode("\n", $correctEmail));
+    file_put_contents(OutputPath . "/" . $basename . '_incorrect_emails.csv', implode("\n", $wrongEmails));
 ?>
     <a class="px-10 py-4 cursor-pointer flex items-center" onclick="javascript:history.back(); return false;">
         <img src="../left_arrow.svg" alt=""><span class="text-red-400">Вернуться на главную</span>
@@ -194,22 +186,22 @@ if (isset($fileName) || $checkAll) {
         <div class="border-orange-400 bg-amber-300 rounded-md border-2 px-2 py-3 gap-4 flex flex-col w-1/3 my-4">
             <!-- Скачать Правильные Email -->
             <?php if (isset($checkAll)) { ?>
-                <a class="border-2 p-3 border-orange-400" href="../output_files/all_files_correct_emails.csv" download>
+                <a class="border-2 p-3 border-orange-400" href="/output/all_files_correct_emails.csv" download>
                     Скачать файл с <b>корректными</b> Email
                 </a>
             <?php } else { ?>
-                <a class="border-2 p-3 border-orange-400" href="../output_files/<?php echo basename($fileName, '.csv') ?>_correct_emails.csv" download>
+                <a class="border-2 p-3 border-orange-400" href="/output/<?php echo basename($fileName, '.csv') ?>_correct_emails.csv" download>
                     Скачать файл с <b>корректными</b> Email
                 </a>
             <?php } ?>
 
             <!-- Скачать Неправильные Email -->
             <?php if (isset($checkAll)) { ?>
-                <a class="border-2 p-3 border-orange-400" href="../output_files/all_files_incorrect_emails.csv" download>
+                <a class="border-2 p-3 border-orange-400" href="/output/all_files_incorrect_emails.csv" download>
                     Скачать файл с <b>неправильными</b> Email
                 </a>
             <?php } else { ?>
-                <a class="border-2 p-3 border-orange-400" href="../output_files/<?php echo basename($fileName, '.csv') ?>_incorrect_emails.csv" download>
+                <a class="border-2 p-3 border-orange-400" href="/output/<?php echo basename($fileName, '.csv') ?>_incorrect_emails.csv" download>
                     Скачать файл с <b>неправильными</b> Email
                 </a>
             <?php } ?>
