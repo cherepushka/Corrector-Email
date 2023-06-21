@@ -1,8 +1,18 @@
-<link rel="stylesheet" href="../style/output.css">
+<link rel="stylesheet" href="/style/output.css">
 <?php
-if (file_exists('../input_files')) {
-    foreach (glob('../input_files/*') as $file)
-        unlink($file);
+
+$rootPath = dirname(__DIR__);
+
+foreach ([$rootPath . "/input", $rootPath . "/output"] as $dir) {
+    if (is_dir($dir)) {
+        foreach (scandir($dir) as $file) {
+            $filepath = $dir . "/" . $file;
+
+            if (!is_dir($filepath)) {
+                unlink($filepath);
+            }
+        }
+    }
 }
 ?>
 <a class="px-10 py-4 cursor-pointer flex items-center" href="../index.php">
