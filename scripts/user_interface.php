@@ -1,17 +1,17 @@
-<?php require_once 'upload_files.php'; ?>
+<?php
+    require_once ROOT . '/scripts/upload_files.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Super Emails Script</title>
-    <link rel="stylesheet" href="./style/output.css">
+    <link rel="stylesheet" href="/style/output.css">
 </head>
-
 <body>
-    <form id="list_files" class="flex flex-col gap-y-3 w-1/3 py-4 px-10" action="" method="post" enctype="multipart/form-data">
-        <label> Выберите файлы для загрузки: </label>
+    <form id="list_files" class="flex flex-col gap-y-3 w-1/3 py-4 px-10" method="post" enctype="multipart/form-data">
+        <label>Выберите файлы для загрузки: (с расширением .CSV)</label>
         <input type="file" name="fileUpload[]" multiple>
         <input class="border-orange-400 border-2 p-1 bg-amber-300 cursor-pointer rounded-md" type="submit" name="Submit" value="Загрузить файлы">
     </form>

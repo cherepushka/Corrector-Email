@@ -1,13 +1,13 @@
 <?php
-require_once __DIR__ . './scripts/user_interface.php';
 
-$output_dir = 'output_files';
-$input_dir = 'input_files';
+define('ROOT', __DIR__);
+define('InputPath', ROOT . "/input");
+define('OutputPath', ROOT . "/output");
 
-if (!is_dir($input_dir)) {
-    mkdir($input_dir, 0777, true);
+foreach ([InputPath, OutputPath] as $dir) {
+    if (!is_dir($dir)) {
+        mkdir($dir);
+    }
 }
 
-if (!is_dir($output_dir)) {
-    mkdir($output_dir, 0777, true);
-}
+require_once ROOT . '/scripts/user_interface.php';
