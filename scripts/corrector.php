@@ -41,6 +41,30 @@ if (isset($fileName) || $checkAll) {
     // Проверяет на окончание ru/com/org, разделяет строку на отдельные email и сравнивает их, удаляет если повторяется
     function filtration($str, $pattern)
     {
+        // if (in_array($str, ['buxgalteria2019@mail.ruludmilab2015@mail.ru', 'andrey@akvilon-holod.rularisa@akvilon-holod'])) {
+            preg_match_all($pattern, $str, $match);
+
+            // $foundResultFirst = implode("\n", $match[0]);
+            $foundResultFirst = $match[0];
+
+            foreach ($match[0] as $matched) {
+                $str = str_replace($matched, '', $str);
+            }
+
+            $notEntered = $str;
+        
+            return [
+                'str' => $str,
+                'initial_str_only_show' => $str,
+                'after_reg_1' => $foundResultFirst ?? false,
+                'after_reg_2' => false,
+                'balance_after_cut_2' => false,
+                'not_repeat_but_did_not_pass_reg' => false,
+                'did_not_pass_first_reg' => $notEntered ?? false,
+                'temp_arr' => false,
+            ];
+        // }
+        
         $str_only_show = $str;
         if (stripos($str, ':')) {
             $pos = stripos($str, ':') + 1;
@@ -74,8 +98,10 @@ if (isset($fileName) || $checkAll) {
             $notEntered = $str;
         }
         // Выбирает Email которых осталось после первой проверки больше 1го
-        $patterns = '/[a-zA-Z0-9_.+-?\']+@([a-z0-9.-]+)[.]((ru)|(com)|(net)|(org)|(kz)|(su))/i';
-        if (preg_match_all($patterns, $str, $found)) {
+        // $patterns = '/[a-zA-Z0-9_.+-?\']+@([a-z0-9.-]+)[.]((ru)|(com)|(net)|(org)|(kz)|(su))/i';
+        // $patterns = '/([\w+|_?|\-?]\.?+)+\@([\w+|\.?|\-?]+)\.(ru|com|net|org|kz|su)/i';
+
+        if (preg_match_all($pattern, $str, $found)) {
             $tempArrStr = $found[0];
         }
         return [
@@ -86,9 +112,10 @@ if (isset($fileName) || $checkAll) {
             'balance_after_cut_2' => $ostatokSecondReplace ?? false,
             'not_repeat_but_did_not_pass_reg' => $notRepeat ?? false,
             'did_not_pass_first_reg' => $notEntered ?? false,
-            'temp_arr' => $tempArrStr ?? false,
+            'temp_arr' => $temp_arr ?? false,
         ];
     }
+
     $arrayAfterRegCycle = [];
     $correctEmail = [];
     $wrongEmail = [];
@@ -96,16 +123,20 @@ if (isset($fileName) || $checkAll) {
     $tempArrStr = [];
 
     // Проверка всех Email первый preg_match
-    $patterns = '/^[a-zA-Z0-9_.+-?\']+@([a-z0-9.-]+)[.]((ru)|(com)|(net)|(org)|(kz)|(su))/i';
+    $patterns = '/([\w+|_?|\-?]\.?+)+\@([\w+|\.?|\-?]+)\.(ru|com|net|org|kz|su)/i';
     foreach ($data as $str) {
+        $str = str_replace(['@@', '\'', '?', '/'], ['@', '', '', ''], $str);
         $arrayAfterRegCycle[] = filtration($str, $patterns);
     }
 
 
     // Распределение по массивам корректных и некорректных email'ов после первого рег
+    
     foreach ($arrayAfterRegCycle as $value) {
         if ($value['after_reg_1'] != null) {
-            $correctEmail[] = $value['after_reg_1'];
+            foreach ($value['after_reg_1'] as $reg) {
+                $correctEmail[] = $reg;
+            }
         }
         if ($value['after_reg_2'] != null) {
             $correctEmail[] = $value['after_reg_2'];
@@ -128,30 +159,70 @@ if (isset($fileName) || $checkAll) {
 
     // Добавление доменов в конец
     foreach ($wrongEmail as $key => &$email) {
-        if (strripos($email, '@mail.')) {
-            $pos = strrpos($email, '.');
-            $email = substr($email, 0, $pos) . '.ru';
-            $correctEmail[] = $email;
-            unset($wrongEmail[$key]);
-        }
-        if (strripos($email, '@yandex')) {
-            $pos = strrpos($email, '.');
-            $email = substr($email, 0, $pos) . '.ru';
-            $correctEmail[] = $email;
-            unset($wrongEmail[$key]);
-        }
-        if (strripos($email, '@gmail')) {
-            $pos = strrpos($email, '.');
-            $email = substr($email, 0, $pos) . '.com';
-            $correctEmail[] = $email;
-            unset($wrongEmail[$key]);
-        } else if (preg_match('/[.][rucm]$/', $email)) {
-            $email = preg_replace(['/[.][ru]$/', '/[.][cm]$/'], ['.ru', '.com'], $email);
-            $correctEmail[] = $email;
-            unset($wrongEmail[$key]);
-        }
-    }
+        
+        preg_match_all('#[\w+|_?|\-?]+\.?+\@([\w+|\.?|\-?]+)\.(\w+)?#', $email, $emailMached);
 
+        
+
+        foreach ($emailMached[0] as $em) {
+            preg_match_all('#\@([\w+|\.?|\-?]+)\.(\w+)?#', $em, $match);
+
+            $continue = false;
+            for ($i = 0; $i < count($match[0]); $i++) {
+                switch ($match[1][$i]) {
+
+                    default : {
+                        switch ($match[2][$i]) {
+                            case "r" : {
+                                $replace = str_replace($match[0], '@' . $match[1][$i] . '.ru', $em);
+                                array_push($correctEmail, $replace);
+                                unset($wrongEmail[$key]);
+                                $continue = true;
+                                break;
+                            }
+                            case "c" :
+                            case "co" : {
+                                $replace = str_replace($match[0], '@' . $match[1][$i] . '.com', $em);
+                                array_push($correctEmail, $replace);
+                                $continue = true;
+                                unset($wrongEmail[$key]);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            if ($continue) {
+                continue;
+            }
+        }
+        
+        // if (strripos($email, '@mail.')) {
+        //     $pos = strrpos($email, '.');
+        //     $email = substr($email, 0, $pos) . '.ru';
+        //     $correctEmail[] = $email;
+        //     unset($wrongEmail[$key]);
+        // }
+        // if (strripos($email, '@yandex')) {
+        //     $pos = strrpos($email, '.');
+        //     $email = substr($email, 0, $pos) . '.ru';
+        //     $correctEmail[] = $email;
+        //     unset($wrongEmail[$key]);
+        // }
+        // if (strripos($email, '@gmail')) {
+        //     $pos = strrpos($email, '.');
+        //     $email = substr($email, 0, $pos) . '.com';
+        //     $correctEmail[] = $email;
+        //     unset($wrongEmail[$key]);
+        // } else if (preg_match('/[.][rucm]$/', $email)) {
+        //     $email = preg_replace(['/[.][ru]$/', '/[.][cm]$/'], ['.ru', '.com'], $email);
+        //     $correctEmail[] = $email;
+        //     unset($wrongEmail[$key]);
+        // }
+    }
+    
+    
     // Очищение массива с неправильными Email от пустых элементов и перекодировка Punycode в домен РФ
     $wrongEmails = [];
     $idn = new idna_convert();
@@ -166,25 +237,37 @@ if (isset($fileName) || $checkAll) {
         }
     }
 
-    // Запись корректных Email
-    if (isset($fileName)) {
-        $buffer = fopen($output_path . basename($fileName, '.csv') . '_correct_emails.csv', 'w');
-    } else {
-        $buffer = fopen($output_path . 'all_files_correct_emails.csv', 'w');
-    }
-    fputs($buffer, chr(0xEF) . chr(0xBB) . chr(0xBF));
-    fputcsv($buffer, $correctEmail, "\n");
-    fclose($buffer);
+    p($correctEmail);
+    p($wrongEmails);
+    die;
 
-    // Запись ошибочных Email
-    if (isset($fileName)) {
-        $buffer = fopen($output_path . basename($fileName, '.csv') . '_incorrect_emails.csv', 'w');
-    } else {
-        $buffer = fopen($output_path . 'all_files_incorrect_emails.csv', 'w');
-    }
-    fputs($buffer, chr(0xEF) . chr(0xBB) . chr(0xBF));
-    fputcsv($buffer, $wrongEmails, "\n");
-    fclose($buffer);
+    // Запись корректных Email
+    // if (isset($fileName)) {
+    //     $buffer = fopen($output_path . basename($fileName, '.csv') . '_correct_emails.csv', 'w');
+    // } else {
+    //     $buffer = fopen($output_path . 'all_files_correct_emails.csv', 'w');
+    // }
+    // fputcsv($buffer, $correctEmail, "\n");
+    // fclose($buffer);
+
+    // // Запись ошибочных Email
+    // if (isset($fileName)) {
+    //     $buffer = fopen($output_path . basename($fileName, '.csv') . '_incorrect_emails.csv', 'w');
+    // } else {
+    //     $buffer = fopen($output_path . 'all_files_incorrect_emails.csv', 'w');
+    // }
+    // fputcsv($buffer, $wrongEmails, "\n");
+    // fclose($buffer);
+
+    // p($arrayAfterRegCycle);
+    // echo "CORRECT.<br>";
+    // p($correctEmail);
+    // echo "WRONG.<br>";
+    // p($wrongEmails);
+    $basename = basename($fileName, '.csv'); // Повторный вызов функции
+
+    file_put_contents($output_path . $basename . '_correct_emails.csv', implode("\n", array_unique($correctEmail)));
+    file_put_contents($output_path . $basename . '_incorrect_emails.csv', implode("\n", $wrongEmails));
 ?>
     <a class="px-10 py-4 cursor-pointer flex items-center" onclick="javascript:history.back(); return false;">
         <img src="../left_arrow.svg" alt=""><span class="text-red-400">Вернуться на главную</span>
