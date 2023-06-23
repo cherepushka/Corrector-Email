@@ -74,7 +74,7 @@ if (isset($fileName) || $checkAll) {
     $notEmptyString = [];
 
     // Проверка всех Email первый preg_match
-    $patterns = '/[\w+_\.\+\-\?\']+@([\w+.-]+?)\.(ru|com|net|org|kz|su)/i';
+    $patterns = '/[\w+_\.\+\-\?\']+@([\w+.-]+?)\.(ru|com|net|org|kz|su|biz|pro|de|info|pro)/i';
     // $patterns = '/([\w+|_?|\-?]+\.?+)\@([\w+|\.?|\-?]+)+\.(ru|com|net|org|kz|su)/i'; Мишин вчерашний вечером
     // $patterns = '/([\w+|_?|\-?]\.?+)+\@([\w+|\.?|\-?]+)\.(ru|com|net|org|kz|su)/i'; Изначальный вариант
     foreach ($data as $str) {
