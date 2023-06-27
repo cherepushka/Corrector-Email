@@ -56,7 +56,7 @@ if (isset($fileName) || $checkAll) {
             $foundResultFirst[] = trim($matched, '\.\_');
 
             $str = str_replace($matched, '', $str);
-            $str = trim($matched, '\.\,');
+            $str = trim($matched, '\.\,\_');
         }
 
         $notEntered = $str;
@@ -74,7 +74,7 @@ if (isset($fileName) || $checkAll) {
     $notEmptyString = [];
 
     // Проверка всех Email первый preg_match
-    $patterns = '/[\w+_\.\+\-\?\']+@([\w+.-]+?)\.(ru|com|net|org|kz|su|biz|pro|de|info|pro)/i';
+    $patterns = '/[\w+_\.\+\-\?\']+@([\w+.-]+?)\.(biz|com|edu|info|org|pro|az|by|kg|kz|ru|su|tj|tm|uz)/i';
     // $patterns = '/([\w+|_?|\-?]+\.?+)\@([\w+|\.?|\-?]+)+\.(ru|com|net|org|kz|su)/i'; Мишин вчерашний вечером
     // $patterns = '/([\w+|_?|\-?]\.?+)+\@([\w+|\.?|\-?]+)\.(ru|com|net|org|kz|su)/i'; Изначальный вариант
     foreach ($data as $str) {
@@ -107,15 +107,15 @@ if (isset($fileName) || $checkAll) {
         }
 
         preg_match_all('#\@([\w+|\.?|\-?]+.?)#', $email, $match2);
-        switch ($match2[1]) {
-            default:
-            case "ya":
-            case "yand": {
-                    $email = str_replace('yand', 'yandex', $email);
-                    break;
-                }
-                break;
-        }
+        // switch ($match2[1]) {
+        //     default:
+        //     case ".ya":
+        //     case ".yand": {
+        //             $email = str_replace(['.yand', '.ya'], 'yandex', $email);
+        //             break;
+        //         }
+        //         break;
+        // }
         preg_match('#\@(yandex|mail|laserservice|akvilon-holod|gazprom-neft)#', $email, $rusDomain);
         if (!empty($rusDomain[1])) {
             $lengthDomain = strlen($rusDomain[1]);
@@ -175,16 +175,16 @@ if (isset($fileName) || $checkAll) {
 
     // Очищение массива с неправильными Email от пустых элементов и перекодировка Punycode в домен РФ
     $wrongEmails = [];
-    $idn = new idna_convert();
+    // $idn = new idna_convert();
     foreach ($wrongEmail as $item) {
-        if ($item != null) {
-            if (strrpos(idn_to_utf8($item), '.рф')) {
-                $encoded = $idn->decode($item);
-                $correctEmail[] = $encoded;
-            } else {
-                $wrongEmails[] = $item;
-            }
-        }
+        //     if ($item != null) {
+        //         if (strrpos(idn_to_utf8($item), '.рф')) {
+        //             $encoded = $idn->decode($item);
+        //             $correctEmail[] = $encoded;
+        //         } else {
+        $wrongEmails[] = $item;
+        // }
+        // }
     }
 
     $wrongEmails = array_unique($wrongEmails);
