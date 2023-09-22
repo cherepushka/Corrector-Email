@@ -38,7 +38,7 @@ if (isset($fileName) || $checkAll) {
         echo '</pre>';
     }
 
-    // Проверяет на окончание ru/com/org, разделяет строку на отдельные email и сравнивает их, удаляет если повторяется
+    // Проверяет на окончание biz|com|edu|info|org|pro|az|by|kg|kz|ru|su|tj|tm|uz, разделяет строку на отдельные email и сравнивает их, удаляет если повторяется
     function filtration($str, $pattern)
     {
         if (stripos($str, ':')) {
@@ -75,7 +75,7 @@ if (isset($fileName) || $checkAll) {
 
     // Проверка всех Email первый preg_match
     $patterns = '/[\w+_\.\+\-\?\']+@([\w+.-]+?)\.(biz|com|edu|info|org|pro|az|by|kg|kz|ru|su|tj|tm|uz)/i';
-    // $patterns = '/([\w+|_?|\-?]+\.?+)\@([\w+|\.?|\-?]+)+\.(ru|com|net|org|kz|su)/i'; Мишин вчерашний вечером
+    // $patterns = '/([\w+|_?|\-?]+\.?+)\@([\w+|\.?|\-?]+)+\.(ru|com|net|org|kz|su)/i'; Мишин
     // $patterns = '/([\w+|_?|\-?]\.?+)+\@([\w+|\.?|\-?]+)\.(ru|com|net|org|kz|su)/i'; Изначальный вариант
     foreach ($data as $str) {
         $str = str_replace(['@@', '\'', '?', '/'], ['@', '', '', ''], $str);
@@ -106,7 +106,7 @@ if (isset($fileName) || $checkAll) {
             continue;
         }
 
-        preg_match_all('#\@([\w+|\.?|\-?]+.?)#', $email, $match2);
+        // preg_match_all('#\@([\w+|\.?|\-?]+.?)#', $email, $match2);
         // switch ($match2[1]) {
         //     default:
         //     case ".ya":
@@ -194,11 +194,11 @@ if (isset($fileName) || $checkAll) {
     }
 
     // Запись в файл корректных Email
+    file_put_contents(OutputPath . $basename . '_correct_emails.csv', chr(0xEF) . chr(0xBB) . chr(0xBF));
     if (isset($fileName)) {
-        file_put_contents(OutputPath . $basename . '_correct_emails.csv', chr(0xEF) . chr(0xBB) . chr(0xBF));
         file_put_contents(OutputPath . $basename . '_correct_emails.csv', implode("\n", array_unique($correctEmail)));
     } else {
-        file_put_contents(OutputPath . 'all_files_correct_emails.csv', chr(0xEF) . chr(0xBB) . chr(0xBF));
+        // file_put_contents(OutputPath . 'all_files_correct_emails.csv', chr(0xEF) . chr(0xBB) . chr(0xBF));
         file_put_contents(OutputPath . 'all_files_correct_emails.csv', implode("\n", array_unique($correctEmail)));
     }
     // Запись в файл ошибочных Email

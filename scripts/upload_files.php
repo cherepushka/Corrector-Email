@@ -12,7 +12,7 @@ if (isset($_FILES['fileUpload']['name'])) {
             $size = $_FILES['fileUpload']['size'][$key];
             $tmp = $_FILES['fileUpload']['tmp_name'][$key];
 
-            if ($size > 0 && $size < 5 * 1024 * 1024) {
+            if ($size > 0 && $size < 20 * 1024 * 1024) {
                 $original_filename = $name;
                 $target = InputPath . "/" . basename($original_filename);
                 move_uploaded_file($tmp, $target);
